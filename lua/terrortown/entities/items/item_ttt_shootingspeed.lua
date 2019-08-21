@@ -5,7 +5,6 @@ ITEM.EquipMenuData = {
 	desc = "You shoot 30% faster!"
 }
 ITEM.material = "vgui/ttt/icon_shootingspeed"
-ITEM.notBuyable = true
 ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
 
 if SERVER then
