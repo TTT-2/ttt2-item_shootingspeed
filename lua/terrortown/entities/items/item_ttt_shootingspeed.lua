@@ -23,60 +23,57 @@ end
 
 if SERVER then
 	local function DisableWeaponSpeed(wep)
-		if IsValid(wep) and wep.OldOnDrop then
-			wep.Primary.Delay = wep.OldDelay
-			wep.OnDrop = wep.OldOnDrop
+		if not IsValid(wep) or not wep.m_shootingSpeed then return end
 
-			net.Start("ShootingSpeed")
-			net.WriteBool(false)
-			net.WriteEntity(wep)
-			net.WriteFloat(wep.Primary.Delay)
-			net.WriteFloat(wep.OldDelay)
-			net.Send(wep.Owner)
+		wep.Primary.Delay = wep.OldDelay
+		wep.OnDrop = wep.OldOnDrop
 
-			wep.OldOnDrop = nil
-			wep.OldDelay = nil
-		end
+		net.Start("ShootingSpeed")
+		net.WriteBool(false)
+		net.WriteEntity(wep)
+		net.WriteFloat(wep.Primary.Delay)
+		net.WriteFloat(wep.OldDelay)
+		net.Send(wep.Owner)
+
+		wep.OldOnDrop = nil
+		wep.OldDelay = nil
+		wep.m_shootingSpeed = nil
 	end
 
 	local function ApplyWeaponSpeed(wep)
-		if (wep.Kind == WEAPON_HEAVY or wep.Kind == WEAPON_PISTOL) then
-			local delay = math.Round(wep.Primary.Delay / 1.5, 3)
+		if not IsValid(wep) or wep.m_shootingSpeed
+		or wep.Kind ~= WEAPON_HEAVY and wep.Kind ~= WEAPON_PISTOL then return end
 
-			wep.OldDelay = wep.Primary.Delay
-			wep.Primary.Delay = delay
-			wep.OldOnDrop = wep.OnDrop
+		wep.OldDelay = wep.Primary.Delay
+		wep.Primary.Delay = math.Round(wep.Primary.Delay / 1.5, 3)
+		wep.OldOnDrop = wep.OnDrop
+		wep.m_shootingSpeed = true
 
-			wep.OnDrop = function(self, ...)
-				if IsValid(self) then
-					if self.OldOnDrop then
-						DisableWeaponSpeed(self)
+		wep.OnDrop = function(self, ...)
+			DisableWeaponSpeed(self)
 
-						self.OldOnDrop = nil
-					end
-
-					self:OnDrop()
-				end
+			if IsValid(self) and isfunction(self.OnDrop) then
+				self:OnDrop(...)
 			end
-
-			net.Start("ShootingSpeed")
-			net.WriteBool(true)
-			net.WriteEntity(wep)
-			net.WriteFloat(wep.Primary.Delay)
-			net.WriteFloat(wep.OldDelay)
-			net.Send(wep.Owner)
 		end
+
+		net.Start("ShootingSpeed")
+		net.WriteBool(true)
+		net.WriteEntity(wep)
+		net.WriteFloat(wep.Primary.Delay)
+		net.WriteFloat(wep.OldDelay)
+		net.Send(wep.Owner)
 	end
 
 	local function shootingModifier(ply, old, new)
-		if IsValid(ply) then
-			if ply:HasEquipmentItem("item_ttt_shootingspeed") then
-				ApplyWeaponSpeed(new)
-			end
+		if not IsValid(ply) then return end
 
-			if IsValid(old) then
-				DisableWeaponSpeed(old)
-			end
+		if ply:HasEquipmentItem("item_ttt_shootingspeed") then
+			ApplyWeaponSpeed(new)
+		end
+
+		if IsValid(old) then
+			DisableWeaponSpeed(old)
 		end
 	end
 	hook.Add("PlayerSwitchWeapon", "ShootingModifySpeed", shootingModifier)
@@ -89,17 +86,22 @@ else
 
 		if apply then
 			wep.OldOnDrop = wep.OnDrop
+			wep.m_shootingSpeed = true
 
 			wep.OnDrop = function(self, ...)
-				if IsValid(self) then
-					self.Primary.Delay = net.ReadFloat()
-					self.OnDrop = self.OldOnDrop
+				if not IsValid(self) then return end
 
-					self:OnDrop()
+				self.Primary.Delay = net.ReadFloat()
+				self.OnDrop = self.OldOnDrop
+				self.m_shootingSpeed = false
+
+				if isfunction(self.OnDrop) then
+					self:OnDrop(...)
 				end
 			end
 		else
 			wep.OnDrop = wep.OldOnDrop
+			wep.m_shootingSpeed = nil
 		end
 	end)
 end
