@@ -45,15 +45,15 @@ if SERVER then
 		or wep.Kind ~= WEAPON_HEAVY and wep.Kind ~= WEAPON_PISTOL then return end
 
 		wep.OldDelay = wep.Primary.Delay
-		wep.Primary.Delay = math.Round(wep.Primary.Delay / 1.5, 3)
+		wep.Primary.Delay = math.Round(0.7 * wep.Primary.Delay, 3)
 		wep.OldOnDrop = wep.OnDrop
 		wep.m_shootingSpeed = true
 
-		wep.OnDrop = function(self, ...)
-			DisableWeaponSpeed(self)
+		wep.OnDrop = function(slf, ...)
+			DisableWeaponSpeed(slf)
 
-			if IsValid(self) and isfunction(self.OnDrop) then
-				self:OnDrop(...)
+			if IsValid(slf) and isfunction(slf.OnDrop) then
+				slf:OldOnDrop(...)
 			end
 		end
 
@@ -90,15 +90,15 @@ else
 			wep.OldOnDrop = wep.OnDrop
 			wep.m_shootingSpeed = true
 
-			wep.OnDrop = function(self, ...)
-				if not IsValid(self) then return end
+			wep.OnDrop = function(slf, ...)
+				if not IsValid(slf) then return end
 
-				self.Primary.Delay = net.ReadFloat()
-				self.OnDrop = self.OldOnDrop
-				self.m_shootingSpeed = false
+				slf.Primary.Delay = net.ReadFloat()
+				slf.OnDrop = slf.OldOnDrop
+				slf.m_shootingSpeed = false
 
-				if isfunction(self.OnDrop) then
-					self:OnDrop(...)
+				if isfunction(slf.OnDrop) then
+					slf:OldOnDrop(...)
 				end
 			end
 		else
