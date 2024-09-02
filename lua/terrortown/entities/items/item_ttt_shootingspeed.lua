@@ -77,6 +77,11 @@ if SERVER then
 		end
 	end
 	hook.Add("PlayerSwitchWeapon", "ShootingModifySpeed", shootingModifier)
+
+	function ITEM:Bought(ply)
+		if not IsValid(ply) then return end
+		ApplyWeaponSpeed(ply:GetActiveWeapon())
+	end
 else
 	net.Receive("ShootingSpeed", function()
 		local apply = net.ReadBool()
