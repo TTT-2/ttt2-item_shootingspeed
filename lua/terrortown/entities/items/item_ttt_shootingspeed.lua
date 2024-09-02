@@ -52,7 +52,7 @@ if SERVER then
 		wep.OnDrop = function(slf, ...)
 			DisableWeaponSpeed(slf)
 
-			if IsValid(slf) and isfunction(slf.OnDrop) then
+			if IsValid(slf) and isfunction(slf.OldOnDrop) then
 				slf:OldOnDrop(...)
 			end
 		end
