@@ -1,8 +1,8 @@
 ITEM.hud = Material("vgui/ttt/perks/hud_shootingspeed.png")
 ITEM.EquipMenuData = {
 	type = "item_passive",
-	name = "shootingspeed",
-	desc = "You shoot 30% faster!"
+	name = "item_shootingspeed",
+	desc = "item_shootingspeed_desc"
 }
 ITEM.material = "vgui/ttt/icon_shootingspeed"
 ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
