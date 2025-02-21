@@ -1,8 +1,8 @@
 ITEM.hud = Material("vgui/ttt/perks/hud_shootingspeed.png")
 ITEM.EquipMenuData = {
 	type = "item_passive",
-	name = "shootingspeed",
-	desc = "You shoot 30% faster!"
+	name = "item_shootingspeed",
+	desc = "item_shootingspeed_desc"
 }
 ITEM.material = "vgui/ttt/icon_shootingspeed"
 ITEM.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE}
@@ -52,7 +52,7 @@ if SERVER then
 		wep.OnDrop = function(slf, ...)
 			DisableWeaponSpeed(slf)
 
-			if IsValid(slf) and isfunction(slf.OnDrop) then
+			if IsValid(slf) and isfunction(slf.OldOnDrop) then
 				slf:OldOnDrop(...)
 			end
 		end
@@ -77,6 +77,11 @@ if SERVER then
 		end
 	end
 	hook.Add("PlayerSwitchWeapon", "ShootingModifySpeed", shootingModifier)
+
+	function ITEM:Bought(ply)
+		if not IsValid(ply) then return end
+		ApplyWeaponSpeed(ply:GetActiveWeapon())
+	end
 else
 	net.Receive("ShootingSpeed", function()
 		local apply = net.ReadBool()
